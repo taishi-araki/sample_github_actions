@@ -6,16 +6,11 @@ name: CI
 # events but only for the main branch
 on:
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Test scenario tags'
+    branches:
+      - features/workflow_dispatch
   push:
     branches:
-      - features/*
+      - 'features/*'
       - develop
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
@@ -48,4 +43,4 @@ jobs:
           echo branch name: ${GITHUB_REF##*/}
           echo GITHUB_REF: $GITHUB_REF
           echo "Log level: ${{ github.event.inputs.logLevel }}"
-          echo "Tags bar: ${{ github.event.inputs.tags }}" 
+          echo "Tags: ${{ github.event.inputs.tags }}" 
