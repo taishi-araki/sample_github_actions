@@ -48,4 +48,4 @@ jobs:
           echo branch name: ${GITHUB_REF##*/}
           echo GITHUB_REF: $GITHUB_REF
           echo "Log level: ${{ github.event.inputs.logLevel }}"
-          echo "Tags foo: ${{ github.event.inputs.tags }}" 
+          echo "Tags bar: ${{ github.event.inputs.tags }}" 
