@@ -3,6 +3,5 @@ description: echo sample description.
 runs:
   using: composite
   steps:
-    - run: |
-      echo Add other actions to build,
-      echo test, and deploy your project.
+    - run: echo "actions echo"
+      shell: bash
