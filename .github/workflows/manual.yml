@@ -14,8 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
+      - uses: actions/checkout@v2
       - name: Run a multi-line script
         run: |
           echo Hello, world!
@@ -23,4 +23,23 @@ jobs:
           echo branch name: ${GITHUB_REF##*/}
           echo GITHUB_REF: $GITHUB_REF
           echo "git tag version: ${{ github.event.inputs.gitTag }}"
+      - name: check
+        run: |
+          SELECT_BRANCH_NAME=${GITHUB_REF##refs/heads/}
+          RELEASES_BRANCH_NAME=releases/${{ github.event.inputs.gitTag }}
+          if [ "${SELECT_BRANCH_NAME}" != "${RELEASES_BRANCH_NAME}" ]; then
+            echo "選択したブランチもしくは入力したタグが誤っています。"
+            echo "選択したブランチ: ${SELECT_BRANCH_NAME}"
+            echo "期待するブランチ: ${RELEASES_BRANCH_NAME}"
+            exit 1
+          fi
+          
+          git tag
+          TAG=${{ github.event.inputs.gitTag }}
+          echo ${TAG}
+          echo "git tag | grep -e ^${TAG}$"
+          git tag | grep "hoge"
+
+          
+          echo OK
 
