@@ -2,10 +2,6 @@ name: ManualTrigger
 
 on:
   workflow_dispatch:
-    branches:
-      - features/workflow_dispatch
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
     inputs:
       gitTag:
         description: 'git tag version (x.y.z)'
@@ -25,6 +21,7 @@ jobs:
           echo "git tag version: ${{ github.event.inputs.gitTag }}"
       - name: check
         run: |
+          echo "リリースブランチ整合性チェック"
           SELECT_BRANCH_NAME=${GITHUB_REF##refs/heads/}
           RELEASES_BRANCH_NAME=releases/${{ github.event.inputs.gitTag }}
           if [ "${SELECT_BRANCH_NAME}" != "${RELEASES_BRANCH_NAME}" ]; then
@@ -34,12 +31,27 @@ jobs:
             exit 1
           fi
           
-          git tag
-          TAG=${{ github.event.inputs.gitTag }}
-          echo ${TAG}
-          echo "git tag | grep -e ^${TAG}$"
-          git tag | grep "hoge"
-
+          git fetch --prune --unshallow --tags
+          # git tag
+          # TAG=${{ github.event.inputs.gitTag }}
+          # echo ${TAG}
+          # echo "git tag | grep -e ^${TAG}$"
+          echo "Gitタグ存在チェック"
+          # 存在しない場合は、GitHub ActionsはNGとして終了する
+          git tag | grep -e ^${{ github.event.inputs.gitTag }}$
           
           echo OK
-
+  output_confirm:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set IMAGE_TAG
+        run: echo "IMAGE_TAG=${{ github.event.inputs.gitTag }}" >> $GITHUB_ENV
+      - name: git branch name
+        run: |
+          git fetch --prune --unshallow --tags
+          git checkout ${{ github.event.inputs.gitTag }}
+          git branch --contains
+          echo $IMAGE_TAG
