@@ -25,6 +25,7 @@ jobs:
           echo "git tag version: ${{ github.event.inputs.gitTag }}"
       - name: check
         run: |
+          echo "リリースブランチ整合性チェック"
           SELECT_BRANCH_NAME=${GITHUB_REF##refs/heads/}
           RELEASES_BRANCH_NAME=releases/${{ github.event.inputs.gitTag }}
           if [ "${SELECT_BRANCH_NAME}" != "${RELEASES_BRANCH_NAME}" ]; then
@@ -38,7 +39,9 @@ jobs:
           TAG=${{ github.event.inputs.gitTag }}
           echo ${TAG}
           echo "git tag | grep -e ^${TAG}$"
-          git tag | grep "hoge"
+          echo "Gitタグ存在チェック"
+          # 存在しない場合は、GitHub ActionsはNGとして終了する
+          git tag | grep -e ^${TAG}$
 
           
           echo OK
