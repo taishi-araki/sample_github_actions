@@ -52,3 +52,14 @@ jobs:
       - name: aws cli
         run: |
           aws s3 ls
+      - name: event post
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.TOKEN_20190505 }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/taishi-araki/sample_github_actions/actions/workflows/2973845/dispatches -d '{"ref":"features/workflow_dispatch", "inputs": {"home":"Tokyo", "name": "swfz"}}'
+  confirm:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: echo
+        run: |
+          echo sample
