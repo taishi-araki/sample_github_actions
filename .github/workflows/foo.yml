@@ -20,3 +20,20 @@ jobs:
           echo GITHUB_REF: $GITHUB_REF
           echo "Hello ${{ github.event.inputs.name }}!"
           echo "- in ${{ github.event.inputs.home }}!"
+  if_check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: set IMAGE_TAG for dev
+      if: contains(github.ref, 'hoge')
+      run: |
+        echo "IMAGE_TAG=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+        echo "EKS_ENV_NAME=dev" >> $GITHUB_ENV
+    - name: set IMAGE_TAG for stg
+      if: contains(github.ref, 'hoge') == false
+      run: |
+        echo "IMAGE_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
+        echo "EKS_ENV_NAME=stg" >> $GITHUB_ENV
+    - name: echo
+      run: |
+        echo IMAGE_TAG: ${IMAGE_TAG}
+        echo EKS_ENV_NAME: ${EKS_ENV_NAME}

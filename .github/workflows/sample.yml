@@ -10,4 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - run: echo Hello, world!
+      - run: echo Hello, world!
+      - uses: actions/checkout@v2
+      - name: git checkout tag
+        run: |
+          git fetch --prune --unshallow --tags
+          git checkout ${TAG}
+          git branch --contains
