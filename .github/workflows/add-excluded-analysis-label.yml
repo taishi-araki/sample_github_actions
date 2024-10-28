@@ -1,0 +1,56 @@
+name: Label PR for Excluded Analysis
+
+on:
+  pull_request:
+    types: [opened, edited]
+env:
+  EXCLUDED_LABEL: "Excluded Analysis"
+  EXCLUDED_COMBINATIONS: "develop:master, develop:r3_2_feature, r2_develop:r3_2_feature, features/excluede_analtcs:develop"
+  PR_TITLE: ${{ github.event.pull_request.title }}
+  PR_NUMBER: ${{ github.event.number }}
+  BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+  HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+  GH_REPO: ${{ github.repository }}
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR Labels
+        id: get_pr_labels
+        run: |
+          labels=$(gh pr view "${{ env.PR_NUMBER }}" --json labels | jq -c '.labels|map(.name)')
+          echo "labels=$labels" >> "$GITHUB_OUTPUT"
+      - name: Check PR Conditions
+        id: check_conditions
+        if: contains(fromJSON(steps.labels.outputs.labels), "${{ env.EXCLUDED_LABEL }}")
+        run: |
+          # 除外ラベルを付与するブランチの組み合わせを配列に設定
+          IFS=', ' read -r -a COMBINATION_ARRAY <<< "${{ env.EXCLUDED_COMBINATIONS }}"
+          
+          # 除外ラベルを付与するブランチの組み合わせをチェック
+          for COMBINATION in "${COMBINATION_ARRAY[@]}"; do
+            IFS=":" read -r SOURCE TARGET <<< "$COMBINATION"
+            if [[ "${{ env.HEAD_BRANCH }}" == "$SOURCE" && "${{ env.BASE_BRANCH }}" == "$TARGET" ]]; then
+              echo "true" > result_condition
+              break
+            fi
+          done
+
+          # タイトルに"本番リリース"が含まれているかチェック
+          if [[ "${{ env.PR_TITLE }}" == *"本番リリース"* ]]; then
+            echo "true" > result_condition
+          fi
+
+          # ラベルを付与する必要があるかどうか
+          if [[ -f result_condition ]]; then
+            echo "is_add_label=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_add_label=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Add Label if Needed
+        if: contains(fromJSON(steps.labels.outputs.labels), "${{ env.EXCLUDED_LABEL }}") && steps.check_conditions.outputs.is_add_label == "true"
+        run: gh issue edit "${{ env.PR_NUMBER }}" --add-label "${{ env.EXCLUDED_LABEL }}"
