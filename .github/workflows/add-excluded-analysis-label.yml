@@ -1,0 +1,60 @@
+name: Label PR for Excluded Analysis
+
+on:
+  pull_request:
+    types: [opened]
+env:
+  EXCLUDED_LABEL: "Excluded Analysis"
+  EXCLUDED_COMBINATIONS: ("develop:master" "develop:r3_2_feature" "r2_develop:r3_2_feature" "features/excluede_analtcs:develop")
+  PR_TITLE: "${{ github.event.pull_request.title }}"
+  BASE_BRANCH: "${{ github.event.pull_request.base.ref }}"
+  HEAD_BRANCH: "${{ github.event.pull_request.head.ref }}"
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PR Conditions
+        id: check_conditions
+        run: |
+          # PRの情報を取得
+          
+          # 条件1: ブランチの組み合わせをチェック
+          for COMBINATION in "${{ env.EXCLUDED_COMBINATIONS[@] }}"; do
+            IFS=":" read -r SOURCE TARGET <<< "$COMBINATION"
+            if [[ "${{ env.HEAD_BRANCH }}" == "$SOURCE" && "${{ env.BASE_BRANCH }}" == "$TARGET" ]]; then
+              echo "true" > condition_met
+              break
+            fi
+          done
+
+          # 条件2: タイトルに"本番リリース"が含まれているかチェック
+          if [[ "${{ env.PR_TITLE }}" == *"本番リリース"* ]]; then
+            echo "true" > condition_met
+          fi
+
+          # ラベルを付与する必要があるかどうか
+          if [[ -f condition_met ]]; then
+            echo "::set-output name=label_needed::true"
+          else
+            echo "::set-output name=label_needed::false"
+          fi
+
+      - name: Add Label if Needed
+        if: steps.check_conditions.outputs.label_needed == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context } = require('@actions/github');
+            const { GITHUB_TOKEN } = process.env;
+
+            const prNumber = context.payload.pull_request.number;
+
+            // PRにラベルを追加
+            await github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: [${{ env.EXCLUDED_LABEL }}],
+            });
