@@ -28,7 +28,7 @@ jobs:
 #        if: ${{ !contains(fromJSON(steps.get_pr_labels.outputs.get_labels), env.EXCLUDED_LABEL) }}
         run: |
           # 除外ラベルを付与するブランチの組み合わせを配列に設定
-          IFS=', ' read -r -a COMBINATION_ARRAY <<< "${{ env.EXCLUDED_COMBINATIONS }}"
+          IFS='->' read -r -a COMBINATION_ARRAY <<< "${{ env.EXCLUDED_COMBINATIONS }}"
 
           # 除外ラベルを付与するブランチの組み合わせをチェック
           for COMBINATION in "${COMBINATION_ARRAY[@]}"; do
