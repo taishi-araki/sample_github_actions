@@ -25,7 +25,7 @@ jobs:
           echo "get-labels=$labels" >> "$GITHUB_OUTPUT"
       - name: Check PR Conditions
         id: check_conditions
-        if: "!contains(fromJSON(steps.get_pr_labels.outputs.get_labels), env.EXCLUDED_LABEL)"
+        if: ${{ !contains(fromJSON(steps.get_pr_labels.outputs.get_labels), env.EXCLUDED_LABEL) }}
         run: |
           echo "hoge"
 #          # 除外ラベルを付与するブランチの組み合わせを配列に設定
