@@ -5,7 +5,7 @@ on:
     types: [opened, edited]
 env:
   EXCLUDED_LABEL: "Excluded Analysis"
-  EXCLUDED_COMBINATIONS: "develop->master, develop->r3_2_feature, r2_develop->r3_2_feature, features/hoge->develop"
+  EXCLUDED_COMBINATIONS: "develop->master, develop->r3_2_feature, r2_develop->r3_2_feature, features/excluede_analtcs->develop"
   PR_TITLE: ${{ github.event.pull_request.title }}
   PR_NUMBER: ${{ github.event.number }}
   BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
