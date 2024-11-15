@@ -52,6 +52,6 @@ jobs:
           fi
 
       - name: Add Label if Needed
-        if: steps.check_conditions.outputs.is_add_label == "true"
+        if: steps.check_conditions.outputs.is_add_label == 'true"
 #        run: gh issue edit "${{ env.PR_NUMBER }}" --add-label "${{ env.EXCLUDED_LABEL }}"
         run: echo "foo"
